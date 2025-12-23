@@ -21,6 +21,12 @@ namespace TetrisLib
         {
         }
 
+        std::shared_ptr<ITetrisPiece> Clone() const
+        {
+            std::shared_ptr<ITetrisPiece> clone( new TetrisPiece( _spotColor, _relativePieces, _x, _y ) );
+            return clone;
+        }
+
         bool CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const
         {
             return DoRelativeSpotsWork( boardData, _relativePieces );
@@ -186,6 +192,11 @@ TetrisPiece::TetrisPiece( SpotColor spotColor,
                          int y )
 {
     _impl.reset( new TetrisPieceImpl( spotColor, relativePieces, x, y ) );
+}
+
+std::shared_ptr<ITetrisPiece> TetrisPiece::Clone() const
+{
+    return _impl->Clone();
 }
 
 bool TetrisPiece::CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const

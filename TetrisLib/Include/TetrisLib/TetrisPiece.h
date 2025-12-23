@@ -20,6 +20,8 @@ namespace TetrisLib
                     int x,
                     int y );
 
+        std::shared_ptr<ITetrisPiece> Clone() const override;
+
         bool CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const override;
         bool CanMove( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) const override;
         bool CanRotate( std::shared_ptr<ITetrisRawBoardData> boardData ) const override;

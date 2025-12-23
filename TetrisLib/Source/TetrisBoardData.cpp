@@ -22,7 +22,6 @@ namespace TetrisLib
         TetrisBoardDataImpl( std::shared_ptr<ITetrisRawBoardData> boardData )
             : _boardData( boardData )
         {
-            Reset();
         }
 
         void AddObserver( ITetrisBoardObserver* observer )
