@@ -7,13 +7,14 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        TetrisBoardPainter.h TetrisBoardPainter.cpp
+        TetrisBoardWidget.h TetrisBoardWidget.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(QtTetris
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        TetrisBoardWidget.h TetrisBoardWidget.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET QtTetris APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
