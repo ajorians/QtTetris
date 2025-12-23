@@ -10,6 +10,7 @@ namespace TetrisLib
 
     struct SpotInfo;
 
+    enum class Action;
     enum class SpotColor;
     enum class Direction;
 
@@ -30,8 +31,10 @@ namespace TetrisLib
 
         virtual SpotInfo GetSpotInfo( int x, int y ) const = 0;
 
-        virtual std::shared_ptr<ITetrisPiece> GetCurrentPice() const = 0;
+        virtual std::shared_ptr<ITetrisPiece> GetCurrentPiece() const = 0;
+        virtual void PerformAction( Action action ) = 0;
 
+        //Can remove if desirable
         virtual void RotatePiece() = 0;
         virtual void MovePiece( Direction direction ) = 0;
         virtual void ZipPieceDown() = 0;

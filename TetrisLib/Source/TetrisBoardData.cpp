@@ -1,5 +1,6 @@
 #include "TetrisLib/TetrisBoardData.h"
 
+#include "TetrisLib/Action.h"
 #include "TetrisLib/Direction.h"
 #include "TetrisLib/SpotColor.h"
 #include "TetrisLib/SpotInfo.h"
@@ -90,6 +91,26 @@ namespace TetrisLib
         std::shared_ptr<ITetrisPiece> GetCurrentPiece() const
         {
             return _currentPiece;
+        }
+
+        void PerformAction( Action action )
+        {
+            if( action == Action::Left )
+            {
+                MovePiece( Direction::Left );
+            }
+            else if( action == Action::Right )
+            {
+                MovePiece( Direction::Right );
+            }
+            else if( action == Action::Rotate )
+            {
+                RotatePiece();
+            }
+            else if( action == Action::ZipDown )
+            {
+                ZipPieceDown();
+            }
         }
 
         void RotatePiece()
@@ -281,9 +302,14 @@ SpotInfo TetrisBoardData::GetSpotInfo( int x, int y ) const
     return _impl->GetSpotInfo( x, y );
 }
 
-std::shared_ptr<ITetrisPiece> TetrisBoardData::GetCurrentPice() const
+std::shared_ptr<ITetrisPiece> TetrisBoardData::GetCurrentPiece() const
 {
     return _impl->GetCurrentPiece();
+}
+
+void TetrisBoardData::PerformAction( Action action )
+{
+    _impl->PerformAction( action );
 }
 
 void TetrisBoardData::RotatePiece()

@@ -7,6 +7,7 @@
 #include <TetrisLib/TetrisPieceProvider.h>
 #include <TetrisLib/TetrisRawBoardData.h>
 
+#include <TetrisLib/Action.h>
 #include <TetrisLib/Direction.h>
 
 #include <TetrisAILib/TetrisAI.h>
@@ -32,9 +33,13 @@ struct TetrisBoardWidgetImpl : public TetrisLib::ITetrisBoardObserver
         _moveTimer = new QTimer(_parent);
         QObject::connect(_moveTimer, &QTimer::timeout, [this]()
                          {
-            _tetrisAI.MakeMove();
-
             _tetrisBoardData->TimerDrop();
+
+            std::optional<TetrisLib::Action> move = _tetrisAI.MakeMove();
+            if( move.has_value() )
+            {
+                _tetrisBoardData->PerformAction( move.value() );
+            }
 
             _parent->update();
         });

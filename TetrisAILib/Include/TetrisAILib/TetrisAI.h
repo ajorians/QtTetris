@@ -1,7 +1,10 @@
 #ifndef TETRISAI_H
 #define TETRISAI_H
 
+#include <TetrisLib/Action.h>
+
 #include <memory>
+#include <optional>
 
 namespace TetrisLib
 {
@@ -17,7 +20,7 @@ namespace TetrisAILib
         TetrisAI( std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData );
         ~TetrisAI();
 
-        void MakeMove();
+        std::optional<TetrisLib::Action> MakeMove();
 
     private:
         std::unique_ptr<TetrisAIImpl> _impl;

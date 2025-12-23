@@ -10,6 +10,7 @@ add_library(TetrisLib STATIC
   Include/TetrisLib/ITetrisPiece.h
   Include/TetrisLib/TetrisPiece.h
   Source/TetrisPiece.cpp
+  Include/TetrisLib/Action.h
   Include/TetrisLib/Direction.h
   Include/TetrisLib/SpotColor.h
   Include/TetrisLib/SpotInfo.h

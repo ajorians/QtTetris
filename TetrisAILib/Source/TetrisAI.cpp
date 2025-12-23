@@ -1,5 +1,7 @@
 #include "TetrisAILib/TetrisAI.h"
 
+#include <TetrisLib/ITetrisBoardData.h>
+
 using namespace TetrisAILib;
 
 namespace TetrisAILib
@@ -11,9 +13,16 @@ namespace TetrisAILib
         {
         }
 
-        void MakeMove()
+        std::optional<TetrisLib::Action> MakeMove()
         {
+            if( !_tetrisBoardData->IsGameInProgress() )
+                return {};
 
+            auto currentPiece = _tetrisBoardData->GetCurrentPiece();
+            if( !currentPiece )
+                return{};
+
+            return TetrisLib::Action::ZipDown;
         }
 
     private:
@@ -30,8 +39,8 @@ TetrisAI::~TetrisAI()
 {
 }
 
-void TetrisAI::MakeMove()
+std::optional<TetrisLib::Action> TetrisAI::MakeMove()
 {
-    _impl->MakeMove();
+    return _impl->MakeMove();
 }
 
