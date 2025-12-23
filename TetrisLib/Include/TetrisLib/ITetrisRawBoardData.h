@@ -1,6 +1,8 @@
 #ifndef ITETRISRAWBOARDDATA_H
 #define ITETRISRAWBOARDDATA_H
 
+#include <memory>
+
 namespace TetrisLib
 {
     enum class SpotColor;
@@ -9,6 +11,10 @@ namespace TetrisLib
     {
         public:
         virtual ~ITetrisRawBoardData() {}
+
+        virtual std::shared_ptr<ITetrisRawBoardData> Clone() const = 0;
+
+        virtual void Reset() = 0;
 
         virtual int GetWidth() const = 0;
         virtual int GetHeight() const = 0;

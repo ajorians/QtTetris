@@ -10,11 +10,13 @@
 
 using namespace TetrisLib;
 
-TetrisPieceProvider::TetrisPieceProvider()
+TetrisPieceProvider::TetrisPieceProvider( int width, int height )
+    : _width( width )
+    , _height( height )
 {
 }
 
-std::unique_ptr<ITetrisPiece> TetrisPieceProvider::GetNextPiece( std::shared_ptr<ITetrisRawBoardData> tetrisRawBoardData )
+std::shared_ptr<ITetrisPiece> TetrisPieceProvider::GetNextPiece()
 {
     SpotColor spotColor = static_cast<SpotColor>( rand() % 7 + 1 );
 
@@ -74,16 +76,10 @@ std::unique_ptr<ITetrisPiece> TetrisPieceProvider::GetNextPiece( std::shared_ptr
         assert( false );//Problem :(
     }
 
-    int x = tetrisRawBoardData->GetWidth() / 2;
-    int y = tetrisRawBoardData->GetHeight() - 1/*index*/;
+    int x = _width / 2;
+    int y = _height - 1/*index*/;
 
-    std::unique_ptr<TetrisPiece> result( new TetrisPiece( tetrisRawBoardData, spotColor, relativePieces, x, y ) );
-
-    if( !result->CanBePlaced() )
-    {
-        result->ApplyToBoard();
-        return nullptr;
-    }
+    std::shared_ptr<TetrisPiece> result( new TetrisPiece( spotColor, relativePieces, x, y ) );
 
     return result;
 }

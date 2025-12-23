@@ -10,25 +10,36 @@ namespace TetrisLib
 {
     struct TetrisPieceImpl
     {
-        TetrisPieceImpl( std::shared_ptr<ITetrisRawBoardData> boardData,
-                        SpotColor spotColor,
+        TetrisPieceImpl( SpotColor spotColor,
                         const std::vector<std::pair<int, int>>& relativePieces,
                         int x,
                         int y )
-            : _boardData( boardData )
-            , _spotColor( spotColor )
+            : _spotColor( spotColor )
             , _relativePieces( relativePieces )
             , _x( x )
             , _y( y )
         {
         }
 
-        bool CanBePlaced() const
+        std::shared_ptr<ITetrisPiece> Clone() const
         {
-            return DoRelativeSpotsWork( _relativePieces );
+            std::shared_ptr<ITetrisPiece> clone( new TetrisPiece( _spotColor, _relativePieces, _x, _y ) );
+            return clone;
         }
 
-        bool Rotate()
+        bool CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const
+        {
+            return DoRelativeSpotsWork( boardData, _relativePieces );
+        }
+
+        bool CanMove( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) const
+        {
+            std::vector newRelativeSpots = GetNewRelativeWithDirection( direction );
+
+            return DoRelativeSpotsWork( boardData, newRelativeSpots );
+        }
+
+        bool CanRotate( std::shared_ptr<ITetrisRawBoardData> boardData ) const
         {
             std::vector<std::pair<int, int>> newRelativeSpots;
             for( const auto& [relX, relY] : _relativePieces )
@@ -36,17 +47,28 @@ namespace TetrisLib
                 newRelativeSpots.push_back( { relY, relX * -1 } );
             }
 
-            if( !DoRelativeSpotsWork( newRelativeSpots ) )
+            return DoRelativeSpotsWork( boardData, newRelativeSpots );
+        }
+
+        bool Rotate( std::shared_ptr<ITetrisRawBoardData> boardData )
+        {
+            if( !CanRotate( boardData ) )
                 return false;
+
+            std::vector<std::pair<int, int>> newRelativeSpots;
+            for( const auto& [relX, relY] : _relativePieces )
+            {
+                newRelativeSpots.push_back( { relY, relX * -1 } );
+            }
 
             _relativePieces = newRelativeSpots;
 
             return true;
         }
 
-        bool Move( Direction direction )
+        bool Move( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction )
         {
-            if( !CanMove( direction ) )
+            if( !CanMove( boardData, direction ) )
                 return false;
 
             if( direction == Direction::Left )
@@ -65,9 +87,9 @@ namespace TetrisLib
             return true;
         }
 
-        bool MoveDownOneRow()
+        bool MoveDownOneRow( std::shared_ptr<ITetrisRawBoardData> boardData )
         {
-            return Move( Direction::Down );
+            return Move( boardData, Direction::Down );
         }
 
         bool IsAtSpot( int x, int y ) const
@@ -81,13 +103,13 @@ namespace TetrisLib
             return false;
         }
 
-        bool WillBeAtSpot( int x, int y ) const
+        bool WillBeAtSpot( std::shared_ptr<ITetrisRawBoardData> boardData, int x, int y ) const
         {
             if( IsAtSpot( x, y ) )
                 return false;
 
             TetrisPieceImpl previewPiece( *this );
-            while( previewPiece.MoveDownOneRow() ){}
+            while( previewPiece.MoveDownOneRow( boardData ) ){}
 
             return previewPiece.IsAtSpot( x, y );
         }
@@ -97,14 +119,14 @@ namespace TetrisLib
             return _spotColor;
         }
 
-        void ApplyToBoard()
+        void ApplyToBoard( std::shared_ptr<ITetrisRawBoardData> boardData )
         {
             for( const auto& [relX, relY] : _relativePieces )
             {
                 int x = _x + relX;
                 int y = _y + relY;
 
-                _boardData->SetSpotColor( x, y, _spotColor );
+                boardData->SetSpotColor( x, y, _spotColor );
             }
         }
 
@@ -136,35 +158,26 @@ namespace TetrisLib
             return newRelativeSpots;
         }
 
-        bool CanMove( Direction direction ) const
-        {
-            std::vector newRelativeSpots = GetNewRelativeWithDirection( direction );
-
-            return DoRelativeSpotsWork( newRelativeSpots );
-        }
-
-        bool DoRelativeSpotsWork( const std::vector<std::pair<int, int>> relativeSpots ) const
+        bool DoRelativeSpotsWork( std::shared_ptr<ITetrisRawBoardData> boardData, const std::vector<std::pair<int, int>> relativeSpots ) const
         {
             for( const auto& [relX, relY] : relativeSpots )
             {
                 int x = _x + relX;
                 int y = _y + relY;
 
-                if( x < 0 || x >= _boardData->GetWidth() )
+                if( x < 0 || x >= boardData->GetWidth() )
                     return false;
 
                 if( y < 0 )
                     return false;
 
-                auto spotColorAtSpot = _boardData->GetSpotColor( x, y );
+                auto spotColorAtSpot = boardData->GetSpotColor( x, y );
                 if( spotColorAtSpot != SpotColor::Nothing )
                     return false;
             }
 
             return true;
         }
-
-        std::shared_ptr<ITetrisRawBoardData> _boardData;
 
         int _x = 0;
         int _y = 0;
@@ -173,33 +186,47 @@ namespace TetrisLib
     };
 }
 
-TetrisPiece::TetrisPiece( std::shared_ptr<ITetrisRawBoardData> boardData,
-                         SpotColor spotColor,
+TetrisPiece::TetrisPiece( SpotColor spotColor,
                          const std::vector<std::pair<int, int>>& relativePieces,
                          int x,
                          int y )
 {
-    _impl.reset( new TetrisPieceImpl( boardData, spotColor, relativePieces, x, y ) );
+    _impl.reset( new TetrisPieceImpl( spotColor, relativePieces, x, y ) );
 }
 
-bool TetrisPiece::CanBePlaced() const
+std::shared_ptr<ITetrisPiece> TetrisPiece::Clone() const
 {
-    return _impl->CanBePlaced();
+    return _impl->Clone();
 }
 
-bool TetrisPiece::Rotate()
+bool TetrisPiece::CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const
 {
-    return _impl->Rotate();
+    return _impl->CanBePlaced( boardData );
 }
 
-bool TetrisPiece::Move( Direction direction )
+bool TetrisPiece::CanMove( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) const
 {
-    return _impl->Move( direction );
+    return _impl->CanMove( boardData, direction );
 }
 
-bool TetrisPiece::MoveDownOneRow()
+bool TetrisPiece::CanRotate( std::shared_ptr<ITetrisRawBoardData> boardData ) const
 {
-    return _impl->MoveDownOneRow();
+    return _impl->CanRotate( boardData );
+}
+
+bool TetrisPiece::Rotate( std::shared_ptr<ITetrisRawBoardData> boardData )
+{
+    return _impl->Rotate( boardData );
+}
+
+bool TetrisPiece::Move( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction )
+{
+    return _impl->Move( boardData, direction );
+}
+
+bool TetrisPiece::MoveDownOneRow( std::shared_ptr<ITetrisRawBoardData> boardData )
+{
+    return _impl->MoveDownOneRow( boardData );
 }
 
 bool TetrisPiece::IsAtSpot( int x, int y) const
@@ -207,9 +234,9 @@ bool TetrisPiece::IsAtSpot( int x, int y) const
     return _impl->IsAtSpot( x, y );
 }
 
-bool TetrisPiece::WillBeAtSpot( int x, int y ) const
+bool TetrisPiece::WillBeAtSpot( std::shared_ptr<ITetrisRawBoardData> boardData, int x, int y ) const
 {
-    return _impl->WillBeAtSpot( x, y );
+    return _impl->WillBeAtSpot( boardData, x, y );
 }
 
 SpotColor TetrisPiece::GetSpotColor() const
@@ -217,7 +244,7 @@ SpotColor TetrisPiece::GetSpotColor() const
     return _impl->GetSpotColor();
 }
 
-void TetrisPiece::ApplyToBoard()
+void TetrisPiece::ApplyToBoard( std::shared_ptr<ITetrisRawBoardData> boardData )
 {
-    _impl->ApplyToBoard();
+    _impl->ApplyToBoard( boardData );
 }

@@ -18,6 +18,26 @@ namespace TetrisLib
             const int totalNumSpots = boardWidth * boardHeight;
 
             _boardData.resize( totalNumSpots );
+            Reset();
+        }
+
+        std::shared_ptr<ITetrisRawBoardData> Clone() const
+        {
+            std::shared_ptr<ITetrisRawBoardData> clone( new TetrisRawBoardData( _boardWidth, _boardHeight ) );
+
+            for( int x=0; x<_boardWidth; x++ )
+            {
+                for( int y=0; y<_boardHeight; y++ )
+                {
+                    clone->SetSpotColor(x, y, GetSpotColor(x, y));
+                }
+            }
+
+            return clone;
+        }
+
+        void Reset()
+        {
             std::fill( _boardData.begin(), _boardData.end(), SpotColor::Nothing );
         }
 
@@ -59,6 +79,16 @@ namespace TetrisLib
 TetrisRawBoardData::TetrisRawBoardData( int boardWidth, int boardHeight )
 {
     _impl.reset( new TetrisRawBoardDataImpl( boardWidth, boardHeight ));
+}
+
+std::shared_ptr<ITetrisRawBoardData> TetrisRawBoardData::Clone() const
+{
+    return _impl->Clone();
+}
+
+void TetrisRawBoardData::Reset()
+{
+    _impl->Reset();
 }
 
 int TetrisRawBoardData::GetWidth() const

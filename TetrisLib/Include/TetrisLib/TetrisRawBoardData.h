@@ -13,6 +13,10 @@ namespace TetrisLib
     public:
         TetrisRawBoardData( int boardWidth, int boardHeight );
 
+        std::shared_ptr<ITetrisRawBoardData> Clone() const override;
+
+        void Reset() override;
+
         int GetWidth() const override;
         int GetHeight() const override;
 

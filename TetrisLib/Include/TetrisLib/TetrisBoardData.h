@@ -3,19 +3,20 @@
 
 #include "ITetrisBoardData.h"
 
-#include <functional>
 #include <memory>
 
 namespace TetrisLib
 {
-    class ITetrisPieceProvider;
+    class ITetrisRawBoardData;
     struct TetrisBoardDataImpl;
 
    class TetrisBoardData : public ITetrisBoardData
    {
    public:
-       TetrisBoardData( std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
-                       std::function<void()> redrawFunc );
+       TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData );
+
+       void AddObserver( ITetrisBoardObserver* observer ) override;
+       void RemoveObserver( ITetrisBoardObserver* observer ) override;
 
        void Reset() override;
 
@@ -24,9 +25,15 @@ namespace TetrisLib
        int GetWidth() const override;
        int GetHeight() const override;
 
-       SpotColor GetSpotColor( int x, int y ) const override;
        SpotInfo GetSpotInfo( int x, int y ) const override;
 
+       std::shared_ptr<ITetrisPiece> GetCurrentPiece() const override;
+       void SetCurrentPiece( std::shared_ptr<ITetrisPiece> piece ) override;
+
+       std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const override;
+
+       bool CanPerformAction( Action action ) const override;
+       void PerformAction( Action action ) override;
        void RotatePiece() override;
        void MovePiece( Direction direction ) override;
        void ZipPieceDown() override;
