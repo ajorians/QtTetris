@@ -11,6 +11,8 @@ namespace TetrisLib
     public:
         virtual ~ITetrisBoardData(){}
 
+        virtual void Reset() = 0;
+
         virtual bool IsGameInProgress() const = 0;
 
         virtual int GetWidth() const = 0;

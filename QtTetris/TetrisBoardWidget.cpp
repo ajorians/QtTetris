@@ -49,6 +49,10 @@ struct TetrisBoardWidgetImpl
         {
             _tetrisBoardData->ZipPieceDown();
         }
+        else if( event->key() == Qt::Key_F2 )
+        {
+            _tetrisBoardData->Reset();
+        }
     }
 
     void Paint( QPaintEvent* event )
@@ -60,7 +64,6 @@ struct TetrisBoardWidgetImpl
         const auto[ pieceDrawWidth, pieceDrawHeight ] = GetPieceDrawSize();
 
         painter.setRenderHint(QPainter::Antialiasing); // Enable anti-aliasing for smoother lines
-
 
         const int boardWidth = _tetrisBoardData->GetWidth();
         const int boardHeight = _tetrisBoardData->GetHeight();

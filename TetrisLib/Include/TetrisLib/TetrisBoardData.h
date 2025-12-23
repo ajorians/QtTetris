@@ -17,6 +17,8 @@ namespace TetrisLib
        TetrisBoardData( std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
                        std::function<void()> redrawFunc );
 
+       void Reset() override;
+
        bool IsGameInProgress() const override;
 
        int GetWidth() const override;
