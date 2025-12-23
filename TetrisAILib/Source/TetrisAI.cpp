@@ -17,6 +17,7 @@ namespace
     {
         std::shared_ptr<TetrisLib::ITetrisBoardData> PerformedTetrisBoardData;
         std::vector<TetrisLib::Action> Actions;
+        int Score = -100;
     };
 }
 
@@ -160,6 +161,24 @@ namespace TetrisAILib
                 if( !change.PerformedTetrisBoardData->CanPerformAction( action ) )
                     continue;
 
+                if( !change.Actions.empty() )
+                {
+                    if( change.Actions.back() == TetrisLib::Action::Left && action == TetrisLib::Action::Right )
+                        continue;
+
+                    if( change.Actions.back() == TetrisLib::Action::Right && action == TetrisLib::Action::Left )
+                        continue;
+
+                    if( change.Actions.size() >= 3 )
+                    {
+                        if( change.Actions[change.Actions.size()-1] == TetrisLib::Action::Rotate &&
+                            change.Actions[change.Actions.size()-2] == TetrisLib::Action::Rotate &&
+                            change.Actions[change.Actions.size()-3] == TetrisLib::Action::Rotate &&
+                            action == TetrisLib::Action::Rotate )
+                            continue;
+                    }
+                }
+
                 auto withAction = WithAction( change, action );
                 result.push_back( withAction );
             }
@@ -192,13 +211,15 @@ namespace TetrisAILib
             return result;
         }
 
-        std::vector<int> ComputeScores( const std::vector<PerformedChange>& performedChanges )
+        std::vector<int> ComputeScores( std::vector<PerformedChange>& performedChanges )
         {
             std::vector<int> result;
 
-            for( const auto& performedChange : performedChanges )
+            for( auto& performedChange : performedChanges )
             {
-                result.push_back( ComputeHeristicScore( performedChange ));
+                int score = ComputeHeristicScore( performedChange );
+                performedChange.Score = score;
+                result.push_back( score );
             }
 
             return result;
