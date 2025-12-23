@@ -30,6 +30,7 @@ namespace TetrisLib
        SpotInfo GetSpotInfo( int x, int y ) const override;
 
        std::shared_ptr<ITetrisPiece> GetCurrentPiece() const override;
+       std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const override;
 
        void PerformAction( Action action ) override;
        void RotatePiece() override;

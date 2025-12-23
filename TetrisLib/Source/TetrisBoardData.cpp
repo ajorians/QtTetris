@@ -93,6 +93,11 @@ namespace TetrisLib
             return _currentPiece;
         }
 
+        std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const
+        {
+            return _boardData;
+        }
+
         void PerformAction( Action action )
         {
             if( action == Action::Left )
@@ -305,6 +310,11 @@ SpotInfo TetrisBoardData::GetSpotInfo( int x, int y ) const
 std::shared_ptr<ITetrisPiece> TetrisBoardData::GetCurrentPiece() const
 {
     return _impl->GetCurrentPiece();
+}
+
+std::shared_ptr<ITetrisRawBoardData> TetrisBoardData::GetRawBoard() const
+{
+    return _impl->GetRawBoard();
 }
 
 void TetrisBoardData::PerformAction( Action action )

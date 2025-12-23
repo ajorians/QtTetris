@@ -7,6 +7,7 @@ namespace TetrisLib
 {
     class ITetrisBoardObserver;
     class ITetrisPiece;
+    class ITetrisRawBoardData;
 
     struct SpotInfo;
 
@@ -32,6 +33,8 @@ namespace TetrisLib
         virtual SpotInfo GetSpotInfo( int x, int y ) const = 0;
 
         virtual std::shared_ptr<ITetrisPiece> GetCurrentPiece() const = 0;
+        virtual std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const = 0;
+
         virtual void PerformAction( Action action ) = 0;
 
         //Can remove if desirable

@@ -2,6 +2,8 @@
 
 #include <TetrisLib/ITetrisBoardData.h>
 
+#include <vector>
+
 using namespace TetrisAILib;
 
 namespace TetrisAILib
@@ -22,10 +24,28 @@ namespace TetrisAILib
             if( !currentPiece )
                 return{};
 
-            return TetrisLib::Action::ZipDown;
+            TetrisLib::Action bestAction = FindBestAction();
+            return bestAction;
         }
 
     private:
+        TetrisLib::Action FindBestAction()
+        {
+            std::vector<std::shared_ptr<TetrisLib::ITetrisBoardData>> resultingChanges = BuildResultingChanges( _tetrisBoardData );
+
+
+
+
+
+            return TetrisLib::Action::Nothing;
+        }
+
+        std::vector<std::shared_ptr<TetrisLib::ITetrisBoardData>> BuildResultingChanges( std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData )
+        {
+            return {};
+        }
+
+
         std::shared_ptr<TetrisLib::ITetrisBoardData> _tetrisBoardData;
     };
 }
