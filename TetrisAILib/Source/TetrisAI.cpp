@@ -15,8 +15,8 @@ namespace
 {
     struct PerformedChange
     {
-        std::shared_ptr<TetrisLib::ITetrisBoardData> PerformedTetrisBoardData;
-        TetrisLib::Action Action;
+        std::shared_ptr<const TetrisLib::ITetrisBoardData> PerformedTetrisBoardData;
+        std::vector<TetrisLib::Action> Actions;
         int Score = -100;
     };
 }
@@ -46,14 +46,14 @@ namespace TetrisAILib
     private:
         TetrisLib::Action FindBestAction()
         {
-            std::vector resultingChanges = BuildResultingChanges( _tetrisBoardData );
-
-            /*std::vector<int> maxLines;
-            maxLines.push_back(GetMaxLinesHeight( _tetrisBoardData ) );
-            for( int i=0; i<resultingChanges.size(); i++ )
+            PerformedChange root
             {
-                maxLines.push_back(GetMaxLinesHeight( resultingChanges[i].PerformedTetrisBoardData ) );
-            }*/
+                .PerformedTetrisBoardData = _tetrisBoardData,
+                .Actions = {},
+                .Score = -100
+            };
+
+            std::vector resultingChanges = BuildResultingChanges( { root }, 2 );
 
             int indexWithHighest = -1;
             int currentHighest = -100;
@@ -73,53 +73,77 @@ namespace TetrisAILib
 
             if( indexWithHighest >= 0 )
             {
-                return resultingChanges[indexWithHighest].Action;
+                std::vector actions = resultingChanges[indexWithHighest].Actions;
+                return actions[0];
             }
 
             return TetrisLib::Action::Nothing;
         }
 
-        std::vector<PerformedChange> BuildResultingChanges( const std::shared_ptr<TetrisLib::ITetrisBoardData>& tetrisBoardData ) const
+        std::vector<PerformedChange> BuildResultingChanges( const std::vector<PerformedChange>& changes, int level ) const
+        {
+            if( level <= 0 )
+            {
+                return changes;
+            }
+
+            std::vector<PerformedChange> newChanges;
+            for( const auto& change : changes )
+            {
+                std::vector moreChanges = BuildResultingChanges( change );
+
+                newChanges.insert( newChanges.begin(), moreChanges.begin(), moreChanges.end() );
+            }
+
+            return BuildResultingChanges( newChanges, level - 1 );
+        }
+
+        std::vector<PerformedChange> BuildResultingChanges( const PerformedChange& change ) const
         {
             std::vector<PerformedChange> result;
 
-            //Move left
-            result.push_back( WithAction( tetrisBoardData, TetrisLib::Action::Left ) );
+            TetrisLib::Action actions[] =
+            {
+                TetrisLib::Action::Left,
+                TetrisLib::Action::Right,
+                TetrisLib::Action::Rotate,
+                TetrisLib::Action::ZipDown
+            };
 
-            //Move Right
-            result.push_back( WithAction( tetrisBoardData, TetrisLib::Action::Right ) );
+            for( const TetrisLib::Action action : actions )
+            {
+                if( change.PerformedTetrisBoardData->GetCurrentPiece() == nullptr )
+                    break;
 
-            //Rotate
-            result.push_back( WithAction( tetrisBoardData, TetrisLib::Action::Rotate ) );
-
-            //Zip Down
-            result.push_back( WithAction( tetrisBoardData, TetrisLib::Action::ZipDown ) );
+                auto withAction = WithAction( change, action );
+                result.push_back( withAction );
+            }
 
             return result;
         }
 
-        PerformedChange WithAction( const std::shared_ptr<TetrisLib::ITetrisBoardData>& tetrisBoardData, TetrisLib::Action action ) const
+        PerformedChange WithAction( const PerformedChange& change, const TetrisLib::Action& action ) const
         {
+            std::shared_ptr<const TetrisLib::ITetrisBoardData> tetrisBoardData = change.PerformedTetrisBoardData;
+
             std::shared_ptr<const TetrisLib::ITetrisRawBoardData> tetrisRawBoardData = tetrisBoardData->GetRawBoard();
-            std::shared_ptr<const TetrisLib::ITetrisPiece> currentPiece = tetrisBoardData->GetCurrentPiece();
+            std::shared_ptr<TetrisLib::ITetrisPiece> currentPiece = tetrisBoardData->GetCurrentPiece();
 
             std::shared_ptr<TetrisLib::ITetrisRawBoardData> clonedRawBoardData = tetrisRawBoardData->Clone();
             std::shared_ptr<TetrisLib::ITetrisBoardData> performedActionBoardData( new TetrisLib::TetrisBoardData( clonedRawBoardData ) );
 
             performedActionBoardData->SetCurrentPiece( currentPiece->Clone() );
-            performedActionBoardData->PerformAction( action );
 
-            if( action != TetrisLib::Action::ZipDown )
-            {
-                performedActionBoardData->PerformAction( TetrisLib::Action::ZipDown );
-            }
+            performedActionBoardData->PerformAction( action );
 
             PerformedChange result
             {
                 .PerformedTetrisBoardData = performedActionBoardData,
-                .Action = action,
+                .Actions = change.Actions,
                 .Score = -100
             };
+
+            result.Actions.push_back( action );
 
             return result;
         }
@@ -140,7 +164,7 @@ namespace TetrisAILib
             return score;
         }
 
-        int GetMaxLinesHeight( const std::shared_ptr<TetrisLib::ITetrisBoardData>& tetrisBoardData ) const
+        int GetMaxLinesHeight( const std::shared_ptr<const TetrisLib::ITetrisBoardData>& tetrisBoardData ) const
         {
             int maxLinesHeight = 0;
 
@@ -160,7 +184,7 @@ namespace TetrisAILib
             return maxLinesHeight;
         }
 
-        int GetTotalGaps( const std::shared_ptr<TetrisLib::ITetrisBoardData>& tetrisBoardData ) const
+        int GetTotalGaps( const std::shared_ptr<const TetrisLib::ITetrisBoardData>& tetrisBoardData ) const
         {
             int totalGaps = 0;
             for( int lineIndex = 0; lineIndex < tetrisBoardData->GetHeight() - 1; lineIndex++ )
