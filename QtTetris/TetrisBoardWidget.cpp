@@ -7,6 +7,8 @@
 
 #include <TetrisLib/Direction.h>
 
+#include <TetrisAILib/TetrisAI.h>
+
 #include <QKeyEvent>
 #include <QPainter>
 #include <QTimer>
@@ -21,10 +23,13 @@ struct TetrisBoardWidgetImpl
         : _parent( parent )
         , _tetrisBoardData( tetrisBoardData)
         , _tetrisBoardPainter( _tetrisBoardData )
+        , _tetrisAI( _tetrisBoardData )
     {
         _moveTimer = new QTimer(_parent);
         QObject::connect(_moveTimer, &QTimer::timeout, [this]()
                          {
+            _tetrisAI.MakeMove();
+
             _tetrisBoardData->TimerDrop();
 
             _parent->update();
@@ -68,6 +73,8 @@ private:
     std::shared_ptr<TetrisLib::ITetrisBoardData> _tetrisBoardData;
     QTimer* _moveTimer;
     TetrisBoardPainter _tetrisBoardPainter;
+
+    TetrisAILib::TetrisAI _tetrisAI;
 };
 
 TetrisBoardWidget::TetrisBoardWidget(QWidget *parent)
