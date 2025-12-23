@@ -15,9 +15,8 @@ namespace
 {
     struct PerformedChange
     {
-        std::shared_ptr<const TetrisLib::ITetrisBoardData> PerformedTetrisBoardData;
+        std::shared_ptr<TetrisLib::ITetrisBoardData> PerformedTetrisBoardData;
         std::vector<TetrisLib::Action> Actions;
-        int Score = -100;
     };
 }
 
@@ -49,35 +48,78 @@ namespace TetrisAILib
             PerformedChange root
             {
                 .PerformedTetrisBoardData = _tetrisBoardData,
-                .Actions = {},
-                .Score = -100
+                .Actions = {}
             };
 
             std::vector resultingChanges = BuildResultingChanges( { root }, 2 );
 
-            int indexWithHighest = -1;
-            int currentHighest = -100;
-            for( int i=0; i<resultingChanges.size(); i++ )
+            //Call zip-down on every one
+            for( auto& change : resultingChanges )
             {
-                auto& change = resultingChanges[i];
-
-                int score = ComputeHeristicScore( change );
-                change.Score = score;
-
-                if( score > currentHighest )
+                if( change.PerformedTetrisBoardData->CanPerformAction( TetrisLib::Action::ZipDown ) )
                 {
-                    currentHighest = score;
-                    indexWithHighest = i;
+                    change.PerformedTetrisBoardData->PerformAction( TetrisLib::Action::ZipDown );
+                    change.Actions.push_back( TetrisLib::Action::ZipDown );
                 }
             }
 
-            if( indexWithHighest >= 0 )
+            std::vector scores = ComputeScores( resultingChanges );
+
+            TetrisLib::Action bestAction = GetBestAction( resultingChanges, scores );
+
+            return bestAction;
+        }
+
+        TetrisLib::Action GetBestAction( const std::vector<PerformedChange>& changes, const std::vector<int>& scores ) const
+        {
+            assert( changes.size() == scores.size() );
+
+            std::vector<int>::const_iterator max_it = std::max_element(scores.cbegin(), scores.cend());
+            int highest_value = *max_it;
+
+            int numLeft = 0;
+            int numRight = 0;
+            int numRotate = 0;
+            int numZipDown = 0;
+
+            for( int i=0; i< scores.size(); i++ )
             {
-                std::vector actions = resultingChanges[indexWithHighest].Actions;
-                return actions[0];
+                if( scores[i] >= highest_value )
+                {
+                    TetrisLib::Action action = changes[i].Actions.front();
+                    switch( action )
+                    {
+                    default:
+                        break;
+                    case TetrisLib::Action::Left:
+                        numLeft++;
+                        break;
+                    case TetrisLib::Action::Right:
+                        numRight++;
+                        break;
+                    case TetrisLib::Action::Rotate:
+                        numRotate++;
+                        break;
+                    case TetrisLib::Action::ZipDown:
+                        numZipDown++;
+                        break;
+                    }
+                }
             }
 
-            return TetrisLib::Action::Nothing;
+            std::vector<int> counts{ numLeft, numRight, numRotate, numZipDown };
+            std::vector<int>::const_iterator maxType_it = std::max_element(counts.cbegin(), counts.cend());
+            int indexBest = std::distance(counts.cbegin(), maxType_it);
+
+            TetrisLib::Action actions[] =
+            {
+                TetrisLib::Action::Left,
+                TetrisLib::Action::Right,
+                TetrisLib::Action::Rotate,
+                TetrisLib::Action::ZipDown
+            };
+
+            return actions[indexBest];
         }
 
         std::vector<PerformedChange> BuildResultingChanges( const std::vector<PerformedChange>& changes, int level ) const
@@ -115,6 +157,9 @@ namespace TetrisAILib
                 if( change.PerformedTetrisBoardData->GetCurrentPiece() == nullptr )
                     break;
 
+                if( !change.PerformedTetrisBoardData->CanPerformAction( action ) )
+                    continue;
+
                 auto withAction = WithAction( change, action );
                 result.push_back( withAction );
             }
@@ -139,11 +184,22 @@ namespace TetrisAILib
             PerformedChange result
             {
                 .PerformedTetrisBoardData = performedActionBoardData,
-                .Actions = change.Actions,
-                .Score = -100
+                .Actions = change.Actions
             };
 
             result.Actions.push_back( action );
+
+            return result;
+        }
+
+        std::vector<int> ComputeScores( const std::vector<PerformedChange>& performedChanges )
+        {
+            std::vector<int> result;
+
+            for( const auto& performedChange : performedChanges )
+            {
+                result.push_back( ComputeHeristicScore( performedChange ));
+            }
 
             return result;
         }
@@ -160,6 +216,9 @@ namespace TetrisAILib
 
             //Not sure on the weights yet
             int score = linesHeight * -5 + totalGaps * -2;
+
+            //This way prefers zip down over left then zip down
+            score -= performedChange.Actions.size();
 
             return score;
         }

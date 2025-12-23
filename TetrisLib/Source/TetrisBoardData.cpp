@@ -182,8 +182,6 @@ namespace TetrisLib
             //Check for completed lines
             RemoveCompletedLines();
 
-            CreateNewPiece();
-
             ObserverUpdate();
         }
 
@@ -191,9 +189,6 @@ namespace TetrisLib
         {
             if( !_currentPiece )
             {
-                CreateNewPiece();
-
-                ObserverUpdate();
                 return;
             }
 
@@ -217,14 +212,6 @@ namespace TetrisLib
             {
                 observer->ObserverUpdate();
             }
-        }
-
-        void CreateNewPiece()
-        {
-            assert( _currentPiece == nullptr );//Maybe in the future will allow changing out the current piece mid-play
-
-            if( !_gameInProgress )
-                return;
         }
 
         void RemoveCompletedLines()
