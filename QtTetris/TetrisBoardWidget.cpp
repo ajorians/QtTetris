@@ -44,16 +44,16 @@ struct TetrisBoardWidgetImpl : public TetrisLib::ITetrisBoardObserver
                 _tetrisBoardData->SetCurrentPiece( nextPiece );
             }
 
-            std::optional<TetrisLib::Action> move = _tetrisAI.MakeMove();
+            /*std::optional<TetrisLib::Action> move = _tetrisAI.MakeMove();
             if( move.has_value() )
             {
                 _tetrisBoardData->PerformAction( move.value() );
-            }
+            }*/
 
             _parent->update();
         });
 
-        _moveTimer->start( 1s );
+        _moveTimer->start( 1'000ms );
     }
 
     ~TetrisBoardWidgetImpl()

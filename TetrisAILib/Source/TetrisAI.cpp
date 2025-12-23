@@ -17,7 +17,7 @@ namespace
     {
         std::shared_ptr<TetrisLib::ITetrisBoardData> PerformedTetrisBoardData;
         std::vector<TetrisLib::Action> Actions;
-        int Score = -100;
+        int Score = -1000;
     };
 }
 
@@ -52,7 +52,7 @@ namespace TetrisAILib
                 .Actions = {}
             };
 
-            std::vector resultingChanges = BuildResultingChanges( { root }, 2 );
+            std::vector resultingChanges = BuildResultingChanges( { root }, 5 );
 
             //Call zip-down on every one
             for( auto& change : resultingChanges )
@@ -74,6 +74,11 @@ namespace TetrisAILib
         TetrisLib::Action GetBestAction( const std::vector<PerformedChange>& changes, const std::vector<int>& scores ) const
         {
             assert( changes.size() == scores.size() );
+
+            if (changes.empty())
+            {
+               return TetrisLib::Action::Nothing;
+            }
 
             std::vector<int>::const_iterator max_it = std::max_element(scores.cbegin(), scores.cend());
             int highest_value = *max_it;
@@ -131,11 +136,19 @@ namespace TetrisAILib
             }
 
             std::vector<PerformedChange> newChanges;
+
             for( const auto& change : changes )
             {
                 std::vector moreChanges = BuildResultingChanges( change );
 
-                newChanges.insert( newChanges.begin(), moreChanges.begin(), moreChanges.end() );
+                if (moreChanges.empty())
+                {
+                   newChanges.push_back(change);
+                }
+                else
+                {
+                   newChanges.insert(newChanges.begin(), moreChanges.begin(), moreChanges.end());
+                }
             }
 
             return BuildResultingChanges( newChanges, level - 1 );
@@ -229,17 +242,39 @@ namespace TetrisAILib
         {
             if( performedChange.PerformedTetrisBoardData->IsGameInProgress() == false )
             {
-                return -100;//Would be a bad action
+                return -1000;//Would be a bad action
             }
 
             int linesHeight = GetMaxLinesHeight( performedChange.PerformedTetrisBoardData );
             int totalGaps = GetTotalGaps( performedChange.PerformedTetrisBoardData );
 
-            //Not sure on the weights yet
-            int score = linesHeight * -5 + totalGaps * -2;
+            int linesWeight = -3;
+            int gapsWeight = -4;
+            int actionsWeight = -1;//This way prefers zip down over left then zip down
 
-            //This way prefers zip down over left then zip down
-            score -= performedChange.Actions.size();
+            if (linesHeight > 15)
+            {
+               linesWeight = -10;
+               gapsWeight = -4;
+            }
+            else if (linesHeight > 10)
+            {
+               linesWeight = -9;
+               gapsWeight = -7;
+            }
+            else if (linesHeight > 7)
+            {
+               linesWeight = -8;
+               gapsWeight = -7;
+            }
+            else if (linesHeight > 5)
+            {
+               linesWeight = -4;
+               gapsWeight = -7;
+            }
+
+            //Not sure on the weights yet
+            int score = linesHeight * linesWeight + totalGaps * gapsWeight + performedChange.Actions.size() * actionsWeight;
 
             return score;
         }
