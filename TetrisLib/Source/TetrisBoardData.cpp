@@ -4,7 +4,6 @@
 #include "TetrisLib/Direction.h"
 #include "TetrisLib/SpotColor.h"
 #include "TetrisLib/SpotInfo.h"
-#include "TetrisLib/ITetrisPieceProvider.h"
 #include "TetrisLib/ITetrisRawBoardData.h"
 #include "TetrisLib/TetrisPiece.h"
 
@@ -20,10 +19,8 @@ namespace TetrisLib
 {
     struct TetrisBoardDataImpl
     {
-        TetrisBoardDataImpl( std::shared_ptr<ITetrisRawBoardData> boardData,
-                            std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider )
+        TetrisBoardDataImpl( std::shared_ptr<ITetrisRawBoardData> boardData )
             : _boardData( boardData )
-            , _tetrisPieceProvider( tetrisPieceProvider )
         {
             Reset();
         }
@@ -46,6 +43,8 @@ namespace TetrisLib
         {
             _boardData->Reset();
             _currentPiece.reset();
+
+            _gameInProgress = true;
 
             ObserverUpdate();
         }
@@ -72,7 +71,7 @@ namespace TetrisLib
                     spotColor = _currentPiece->GetSpotColor();
                     spotOrigin = SpotOrigin::CurrentPiece;
                 }
-                else if( _currentPiece->WillBeAtSpot( x, y ) )
+                else if( _currentPiece->WillBeAtSpot( _boardData, x, y ) )
                 {
                     spotColor = _currentPiece->GetSpotColor();
                     spotOrigin = SpotOrigin::PreviewPiece;
@@ -91,6 +90,19 @@ namespace TetrisLib
         std::shared_ptr<ITetrisPiece> GetCurrentPiece() const
         {
             return _currentPiece;
+        }
+
+        void SetCurrentPiece( std::shared_ptr<ITetrisPiece> piece )
+        {
+            _currentPiece = piece;
+
+            if( !_currentPiece->CanBePlaced( _boardData ) )
+            {
+                //Game over
+                _gameInProgress = false;
+            }
+
+            ObserverUpdate();
         }
 
         std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const
@@ -120,7 +132,7 @@ namespace TetrisLib
 
         void RotatePiece()
         {
-            if( _currentPiece && _currentPiece->Rotate() )
+            if( _currentPiece && _currentPiece->Rotate( _boardData ) )
             {
                 ObserverUpdate();
             }
@@ -128,7 +140,7 @@ namespace TetrisLib
 
         void MovePiece( Direction direction )
         {
-            if( _currentPiece && _currentPiece->Move( direction ) )
+            if( _currentPiece && _currentPiece->Move( _boardData, direction ) )
             {
                 ObserverUpdate();
             }
@@ -139,11 +151,11 @@ namespace TetrisLib
             if( !_currentPiece )
                 return;
 
-            while( _currentPiece->Move( Direction::Down ) )
+            while( _currentPiece->Move( _boardData, Direction::Down ) )
             {
             }
 
-            _currentPiece->ApplyToBoard();
+            _currentPiece->ApplyToBoard( _boardData );
             _currentPiece.reset();
 
             //Check for completed lines
@@ -164,10 +176,10 @@ namespace TetrisLib
                 return;
             }
 
-            if( !_currentPiece->MoveDownOneRow() )
+            if( !_currentPiece->MoveDownOneRow( _boardData ) )
             {
                 //Piece reached bottom
-                _currentPiece->ApplyToBoard();
+                _currentPiece->ApplyToBoard( _boardData );
                 _currentPiece.reset();
 
                 //Check for completed lines
@@ -192,14 +204,6 @@ namespace TetrisLib
 
             if( !_gameInProgress )
                 return;
-
-            _currentPiece = _tetrisPieceProvider->GetNextPiece( _boardData );
-
-            if( _currentPiece == nullptr )
-            {
-                //Game over
-                _gameInProgress = false;
-            }
         }
 
         void RemoveCompletedLines()
@@ -258,7 +262,6 @@ namespace TetrisLib
         }
 
         std::shared_ptr<ITetrisRawBoardData> _boardData;
-        std::shared_ptr<ITetrisPieceProvider> _tetrisPieceProvider;
         std::set<ITetrisBoardObserver*> _observers;
 
         std::shared_ptr<ITetrisPiece> _currentPiece;
@@ -266,10 +269,9 @@ namespace TetrisLib
     };
 }
 
-TetrisBoardData::TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData,
-                                 std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider )
+TetrisBoardData::TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData )
 {
-    _impl.reset( new TetrisBoardDataImpl( boardData, tetrisPieceProvider ) );
+    _impl.reset( new TetrisBoardDataImpl( boardData ) );
 }
 
 void TetrisBoardData::AddObserver( ITetrisBoardObserver* observer )
@@ -310,6 +312,11 @@ SpotInfo TetrisBoardData::GetSpotInfo( int x, int y ) const
 std::shared_ptr<ITetrisPiece> TetrisBoardData::GetCurrentPiece() const
 {
     return _impl->GetCurrentPiece();
+}
+
+void TetrisBoardData::SetCurrentPiece( std::shared_ptr<ITetrisPiece> piece )
+{
+    _impl->SetCurrentPiece( piece );
 }
 
 std::shared_ptr<ITetrisRawBoardData> TetrisBoardData::GetRawBoard() const

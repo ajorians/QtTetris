@@ -8,9 +8,13 @@ namespace TetrisLib
     class TetrisPieceProvider : public TetrisLib::ITetrisPieceProvider
     {
     public:
-        TetrisPieceProvider();
+        TetrisPieceProvider( int width, int height );
 
-        std::unique_ptr<ITetrisPiece> GetNextPiece( std::shared_ptr<ITetrisRawBoardData> tetrisRawBoardData ) override;
+        std::shared_ptr<ITetrisPiece> GetNextPiece() override;
+
+    private:
+        int _width;
+        int _height;
     };
 }
 

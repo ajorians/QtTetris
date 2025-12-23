@@ -33,6 +33,8 @@ namespace TetrisLib
         virtual SpotInfo GetSpotInfo( int x, int y ) const = 0;
 
         virtual std::shared_ptr<ITetrisPiece> GetCurrentPiece() const = 0;
+        virtual void SetCurrentPiece( std::shared_ptr<ITetrisPiece> piece ) = 0;
+
         virtual std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const = 0;
 
         virtual void PerformAction( Action action ) = 0;

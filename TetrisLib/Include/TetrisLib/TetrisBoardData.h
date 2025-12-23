@@ -7,15 +7,13 @@
 
 namespace TetrisLib
 {
-    class ITetrisPieceProvider;
     class ITetrisRawBoardData;
     struct TetrisBoardDataImpl;
 
    class TetrisBoardData : public ITetrisBoardData
    {
    public:
-       TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData,
-                       std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider );
+       TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData );
 
        void AddObserver( ITetrisBoardObserver* observer ) override;
        void RemoveObserver( ITetrisBoardObserver* observer ) override;
@@ -30,6 +28,8 @@ namespace TetrisLib
        SpotInfo GetSpotInfo( int x, int y ) const override;
 
        std::shared_ptr<ITetrisPiece> GetCurrentPiece() const override;
+       void SetCurrentPiece( std::shared_ptr<ITetrisPiece> piece ) override;
+
        std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const override;
 
        void PerformAction( Action action ) override;

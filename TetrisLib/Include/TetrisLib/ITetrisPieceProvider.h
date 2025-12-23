@@ -6,14 +6,13 @@
 namespace TetrisLib
 {
     class ITetrisPiece;
-    class ITetrisRawBoardData;
 
     class ITetrisPieceProvider
     {
     public:
         virtual ~ITetrisPieceProvider() {}
 
-        virtual std::unique_ptr<ITetrisPiece> GetNextPiece( std::shared_ptr<ITetrisRawBoardData> tetrisRawBoardData ) = 0;
+        virtual std::shared_ptr<ITetrisPiece> GetNextPiece() = 0;
     };
 }
 

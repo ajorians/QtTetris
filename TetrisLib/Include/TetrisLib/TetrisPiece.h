@@ -15,22 +15,21 @@ namespace TetrisLib
     class TetrisPiece : public ITetrisPiece
     {
     public:
-        TetrisPiece( std::shared_ptr<ITetrisRawBoardData> _boardData,
-                    SpotColor spotColor,
+        TetrisPiece( SpotColor spotColor,
                     const std::vector<std::pair<int, int>>& relativePieces,
                     int x,
                     int y );
 
-        bool CanBePlaced() const override;
+        bool CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const override;
 
-        bool Rotate() override;
-        bool Move( Direction direction ) override;
-        bool MoveDownOneRow() override;
+        bool Rotate( std::shared_ptr<ITetrisRawBoardData> boardData ) override;
+        bool Move( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) override;
+        bool MoveDownOneRow( std::shared_ptr<ITetrisRawBoardData> boardData ) override;
         bool IsAtSpot( int x, int y) const override;
-        bool WillBeAtSpot( int x, int y ) const override;
+        bool WillBeAtSpot( std::shared_ptr<ITetrisRawBoardData> boardData, int x, int y ) const override;
         SpotColor GetSpotColor() const override;
 
-        void ApplyToBoard() override;
+        void ApplyToBoard( std::shared_ptr<ITetrisRawBoardData> boardData ) override;
 
     private:
         std::unique_ptr<TetrisPieceImpl> _impl;

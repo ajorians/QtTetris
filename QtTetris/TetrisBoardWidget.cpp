@@ -30,10 +30,19 @@ struct TetrisBoardWidgetImpl : public TetrisLib::ITetrisBoardObserver
     {
         _tetrisBoardData->AddObserver( this );
 
+        _tetrisPieceProvider.reset( new TetrisLib::TetrisPieceProvider( _tetrisBoardData->GetWidth(), _tetrisBoardData->GetHeight() ) );
+
         _moveTimer = new QTimer(_parent);
         QObject::connect(_moveTimer, &QTimer::timeout, [this]()
                          {
             _tetrisBoardData->TimerDrop();
+
+            //Check if needs new piece
+            if ( _tetrisBoardData->IsGameInProgress() && _tetrisBoardData->GetCurrentPiece() == nullptr )
+            {
+                auto nextPiece = _tetrisPieceProvider->GetNextPiece();
+                _tetrisBoardData->SetCurrentPiece( nextPiece );
+            }
 
             std::optional<TetrisLib::Action> move = _tetrisAI.MakeMove();
             if( move.has_value() )
@@ -90,6 +99,7 @@ struct TetrisBoardWidgetImpl : public TetrisLib::ITetrisBoardObserver
 private:
 
     QWidget* _parent;
+    std::shared_ptr<TetrisLib::ITetrisPieceProvider> _tetrisPieceProvider;
     std::shared_ptr<TetrisLib::ITetrisBoardData> _tetrisBoardData;
     QTimer* _moveTimer;
     TetrisBoardPainter _tetrisBoardPainter;
@@ -102,10 +112,8 @@ TetrisBoardWidget::TetrisBoardWidget(QWidget *parent)
 {
     setFocusPolicy(Qt::StrongFocus);
 
-    std::shared_ptr<TetrisLib::ITetrisPieceProvider> tetrisPieceProvider( new TetrisLib::TetrisPieceProvider() );
-
     std::shared_ptr<TetrisLib::ITetrisRawBoardData> rawBoardData( new TetrisLib::TetrisRawBoardData( 10, 20 ) );
-    std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData( new TetrisLib::TetrisBoardData( rawBoardData, tetrisPieceProvider ) );
+    std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData( new TetrisLib::TetrisBoardData( rawBoardData ) );
 
     _impl.reset( new TetrisBoardWidgetImpl( this, tetrisBoardData ) );
 }
