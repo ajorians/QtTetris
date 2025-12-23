@@ -21,7 +21,13 @@ namespace TetrisLib
             : _redrawFunc( redrawFunc )
             , _tetrisPieceProvider( tetrisPieceProvider )
         {
+            Reset();
+        }
+
+        void Reset()
+        {
             _boardData.reset( new TetrisRawBoardData( 10, 20 ) );
+            _currentPiece.reset();
         }
 
         bool IsGameInProgress() const { return _gameInProgress; }
@@ -189,6 +195,11 @@ TetrisBoardData::TetrisBoardData( std::shared_ptr<ITetrisPieceProvider> tetrisPi
                                  std::function<void()> redrawFunc )
 {
     _impl.reset( new TetrisBoardDataImpl( tetrisPieceProvider, redrawFunc));
+}
+
+void TetrisBoardData::Reset()
+{
+    _impl->Reset();
 }
 
 bool TetrisBoardData::IsGameInProgress() const
