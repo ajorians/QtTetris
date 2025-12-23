@@ -20,7 +20,6 @@ namespace TetrisLib
         virtual int GetWidth() const = 0;
         virtual int GetHeight() const = 0;
 
-        virtual SpotColor GetSpotColor( int x, int y ) const = 0;
         virtual SpotInfo GetSpotInfo( int x, int y ) const = 0;
 
         virtual void RotatePiece() = 0;

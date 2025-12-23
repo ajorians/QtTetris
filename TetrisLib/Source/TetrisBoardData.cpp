@@ -36,16 +36,6 @@ namespace TetrisLib
         int GetWidth() const { return _boardData->GetWidth(); }
         int GetHeight() const { return _boardData->GetHeight(); }
 
-        SpotColor GetSpotColor( int x, int y ) const
-        {
-            if( _currentPiece && _currentPiece->IsAtSpot(x, y))
-            {
-                return _currentPiece->GetSpotColor();
-            }
-
-            return _boardData->GetSpotColor( x, y );
-        }
-
         SpotInfo GetSpotInfo( int x, int y ) const
         {
             SpotColor spotColor = _boardData->GetSpotColor( x, y );
@@ -249,11 +239,6 @@ int TetrisBoardData::GetWidth() const
 int TetrisBoardData::GetHeight() const
 {
     return _impl->GetHeight();
-}
-
-SpotColor TetrisBoardData::GetSpotColor( int x, int y ) const
-{
-    return _impl->GetSpotColor( x, y );
 }
 
 SpotInfo TetrisBoardData::GetSpotInfo( int x, int y ) const
