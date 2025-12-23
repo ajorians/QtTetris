@@ -110,6 +110,28 @@ namespace TetrisLib
             return _boardData;
         }
 
+        bool CanPerformAction( Action action ) const
+        {
+            if( action == Action::Left && _currentPiece && _currentPiece->CanMove( _boardData, Direction::Left ) )
+            {
+                return true;
+            }
+            else if( action == Action::Right && _currentPiece && _currentPiece->CanMove( _boardData, Direction::Right ) )
+            {
+                return true;
+            }
+            else if( action == Action::Rotate && _currentPiece && _currentPiece->CanRotate( _boardData ) )
+            {
+                return true;
+            }
+            else if( action == Action::ZipDown && _currentPiece )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         void PerformAction( Action action )
         {
             if( action == Action::Left )
@@ -322,6 +344,11 @@ void TetrisBoardData::SetCurrentPiece( std::shared_ptr<ITetrisPiece> piece )
 std::shared_ptr<ITetrisRawBoardData> TetrisBoardData::GetRawBoard() const
 {
     return _impl->GetRawBoard();
+}
+
+bool TetrisBoardData::CanPerformAction( Action action ) const
+{
+    return _impl->CanPerformAction( action );
 }
 
 void TetrisBoardData::PerformAction( Action action )

@@ -42,7 +42,11 @@ namespace TetrisAILib
 
         std::vector<std::shared_ptr<TetrisLib::ITetrisBoardData>> BuildResultingChanges( std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData )
         {
-            return {};
+            std::vector<std::shared_ptr<TetrisLib::ITetrisBoardData>> result;
+
+            tetrisBoardData->CanPerformAction( TetrisLib::Action::Left );
+
+            return result;
         }
 
 

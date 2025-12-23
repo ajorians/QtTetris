@@ -16,6 +16,8 @@ namespace TetrisLib
         virtual ~ITetrisPiece() {}
 
         virtual bool CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const = 0;
+        virtual bool CanMove( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) const = 0;
+        virtual bool CanRotate( std::shared_ptr<ITetrisRawBoardData> boardData ) const = 0;
 
         virtual bool Rotate( std::shared_ptr<ITetrisRawBoardData> boardData ) = 0;
         virtual bool Move( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) = 0;

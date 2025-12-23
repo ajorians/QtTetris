@@ -32,6 +32,7 @@ namespace TetrisLib
 
        std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const override;
 
+       bool CanPerformAction( Action action ) const override;
        void PerformAction( Action action ) override;
        void RotatePiece() override;
        void MovePiece( Direction direction ) override;

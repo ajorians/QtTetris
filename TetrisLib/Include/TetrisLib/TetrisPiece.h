@@ -21,6 +21,8 @@ namespace TetrisLib
                     int y );
 
         bool CanBePlaced( std::shared_ptr<ITetrisRawBoardData> boardData ) const override;
+        bool CanMove( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) const override;
+        bool CanRotate( std::shared_ptr<ITetrisRawBoardData> boardData ) const override;
 
         bool Rotate( std::shared_ptr<ITetrisRawBoardData> boardData ) override;
         bool Move( std::shared_ptr<ITetrisRawBoardData> boardData, Direction direction ) override;

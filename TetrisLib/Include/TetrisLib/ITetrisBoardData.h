@@ -37,6 +37,7 @@ namespace TetrisLib
 
         virtual std::shared_ptr<ITetrisRawBoardData> GetRawBoard() const = 0;
 
+        virtual bool CanPerformAction( Action action ) const = 0;
         virtual void PerformAction( Action action ) = 0;
 
         //Can remove if desirable
