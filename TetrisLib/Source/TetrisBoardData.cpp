@@ -4,8 +4,8 @@
 #include "TetrisLib/SpotColor.h"
 #include "TetrisLib/SpotInfo.h"
 #include "TetrisLib/ITetrisPieceProvider.h"
+#include "TetrisLib/ITetrisRawBoardData.h"
 #include "TetrisLib/TetrisPiece.h"
-#include "TetrisLib/TetrisRawBoardData.h"
 
 #include "TetrisLib/ITetrisPiece.h"
 
@@ -17,17 +17,19 @@ namespace TetrisLib
 {
     struct TetrisBoardDataImpl
     {
-        TetrisBoardDataImpl( std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
+        TetrisBoardDataImpl( std::shared_ptr<ITetrisRawBoardData> boardData,
+                            std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
                             std::function<void()> redrawFunc )
-            : _redrawFunc( redrawFunc )
+            : _boardData( boardData )
             , _tetrisPieceProvider( tetrisPieceProvider )
+            , _redrawFunc( redrawFunc )
         {
             Reset();
         }
 
         void Reset()
         {
-            _boardData.reset( new TetrisRawBoardData( 10, 20 ) );
+            _boardData->Reset();
             _currentPiece.reset();
         }
 
@@ -67,6 +69,11 @@ namespace TetrisLib
             };
 
             return result;
+        }
+
+        std::shared_ptr<ITetrisPiece> GetCurrentPiece() const
+        {
+            return _currentPiece;
         }
 
         void RotatePiece()
@@ -210,15 +217,16 @@ namespace TetrisLib
         std::shared_ptr<ITetrisRawBoardData> _boardData;
         std::shared_ptr<ITetrisPieceProvider> _tetrisPieceProvider;
 
-        std::unique_ptr<ITetrisPiece> _currentPiece;
+        std::shared_ptr<ITetrisPiece> _currentPiece;
         bool _gameInProgress = true;
     };
 }
 
-TetrisBoardData::TetrisBoardData( std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
+TetrisBoardData::TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData,
+                                 std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
                                  std::function<void()> redrawFunc )
 {
-    _impl.reset( new TetrisBoardDataImpl( tetrisPieceProvider, redrawFunc));
+    _impl.reset( new TetrisBoardDataImpl( boardData, tetrisPieceProvider, redrawFunc));
 }
 
 void TetrisBoardData::Reset()
@@ -244,6 +252,11 @@ int TetrisBoardData::GetHeight() const
 SpotInfo TetrisBoardData::GetSpotInfo( int x, int y ) const
 {
     return _impl->GetSpotInfo( x, y );
+}
+
+std::shared_ptr<ITetrisPiece> TetrisBoardData::GetCurrentPice() const
+{
+    return _impl->GetCurrentPiece();
 }
 
 void TetrisBoardData::RotatePiece()

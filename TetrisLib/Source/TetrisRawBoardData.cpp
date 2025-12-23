@@ -18,6 +18,11 @@ namespace TetrisLib
             const int totalNumSpots = boardWidth * boardHeight;
 
             _boardData.resize( totalNumSpots );
+            Reset();
+        }
+
+        void Reset()
+        {
             std::fill( _boardData.begin(), _boardData.end(), SpotColor::Nothing );
         }
 
@@ -59,6 +64,11 @@ namespace TetrisLib
 TetrisRawBoardData::TetrisRawBoardData( int boardWidth, int boardHeight )
 {
     _impl.reset( new TetrisRawBoardDataImpl( boardWidth, boardHeight ));
+}
+
+void TetrisRawBoardData::Reset()
+{
+    _impl->Reset();
 }
 
 int TetrisRawBoardData::GetWidth() const

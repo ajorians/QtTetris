@@ -13,6 +13,8 @@ namespace TetrisLib
     public:
         TetrisRawBoardData( int boardWidth, int boardHeight );
 
+        void Reset() override;
+
         int GetWidth() const override;
         int GetHeight() const override;
 

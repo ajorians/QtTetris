@@ -4,6 +4,7 @@
 
 #include <TetrisLib/TetrisBoardData.h>
 #include <TetrisLib/TetrisPieceProvider.h>
+#include <TetrisLib/TetrisRawBoardData.h>
 
 #include <TetrisLib/Direction.h>
 
@@ -89,7 +90,8 @@ TetrisBoardWidget::TetrisBoardWidget(QWidget *parent)
 
     std::shared_ptr<TetrisLib::ITetrisPieceProvider> tetrisPieceProvider( new TetrisLib::TetrisPieceProvider() );
 
-    std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData( new TetrisLib::TetrisBoardData( tetrisPieceProvider, redrawFunc ) );
+    std::shared_ptr<TetrisLib::ITetrisRawBoardData> rawBoardData( new TetrisLib::TetrisRawBoardData( 10, 20 ) );
+    std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData( new TetrisLib::TetrisBoardData( rawBoardData, tetrisPieceProvider, redrawFunc ) );
 
     _impl.reset( new TetrisBoardWidgetImpl( this, tetrisBoardData ) );
 }

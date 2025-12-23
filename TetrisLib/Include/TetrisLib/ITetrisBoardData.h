@@ -1,8 +1,12 @@
 #ifndef ITETRISBOARDDATA_H
 #define ITETRISBOARDDATA_H
 
+#include <memory>
+
 namespace TetrisLib
 {
+    class ITetrisPiece;
+
     struct SpotInfo;
 
     enum class SpotColor;
@@ -21,6 +25,8 @@ namespace TetrisLib
         virtual int GetHeight() const = 0;
 
         virtual SpotInfo GetSpotInfo( int x, int y ) const = 0;
+
+        virtual std::shared_ptr<ITetrisPiece> GetCurrentPice() const = 0;
 
         virtual void RotatePiece() = 0;
         virtual void MovePiece( Direction direction ) = 0;

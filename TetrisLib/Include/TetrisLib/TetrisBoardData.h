@@ -9,12 +9,14 @@
 namespace TetrisLib
 {
     class ITetrisPieceProvider;
+    class ITetrisRawBoardData;
     struct TetrisBoardDataImpl;
 
    class TetrisBoardData : public ITetrisBoardData
    {
    public:
-       TetrisBoardData( std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
+       TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData,
+                       std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
                        std::function<void()> redrawFunc );
 
        void Reset() override;
@@ -25,6 +27,8 @@ namespace TetrisLib
        int GetHeight() const override;
 
        SpotInfo GetSpotInfo( int x, int y ) const override;
+
+       std::shared_ptr<ITetrisPiece> GetCurrentPice() const override;
 
        void RotatePiece() override;
        void MovePiece( Direction direction ) override;
