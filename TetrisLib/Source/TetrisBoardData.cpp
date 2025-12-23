@@ -8,8 +8,10 @@
 #include "TetrisLib/TetrisPiece.h"
 
 #include "TetrisLib/ITetrisPiece.h"
+#include "TetrisLib/ITetrisBoardObserver.h"
 
 #include <cassert>
+#include <set>
 
 using namespace TetrisLib;
 
@@ -18,19 +20,33 @@ namespace TetrisLib
     struct TetrisBoardDataImpl
     {
         TetrisBoardDataImpl( std::shared_ptr<ITetrisRawBoardData> boardData,
-                            std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
-                            std::function<void()> redrawFunc )
+                            std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider )
             : _boardData( boardData )
             , _tetrisPieceProvider( tetrisPieceProvider )
-            , _redrawFunc( redrawFunc )
         {
             Reset();
+        }
+
+        void AddObserver( ITetrisBoardObserver* observer )
+        {
+            _observers.insert( observer );
+        }
+
+        void RemoveObserver( ITetrisBoardObserver* observer )
+        {
+            auto it = _observers.find( observer );
+            if( it != _observers.end() )
+            {
+                _observers.erase( it );
+            }
         }
 
         void Reset()
         {
             _boardData->Reset();
             _currentPiece.reset();
+
+            ObserverUpdate();
         }
 
         bool IsGameInProgress() const { return _gameInProgress; }
@@ -80,7 +96,7 @@ namespace TetrisLib
         {
             if( _currentPiece && _currentPiece->Rotate() )
             {
-                Update();
+                ObserverUpdate();
             }
         }
 
@@ -88,7 +104,7 @@ namespace TetrisLib
         {
             if( _currentPiece && _currentPiece->Move( direction ) )
             {
-                Update();
+                ObserverUpdate();
             }
         }
 
@@ -109,7 +125,7 @@ namespace TetrisLib
 
             CreateNewPiece();
 
-            Update();
+            ObserverUpdate();
         }
 
         void TimerDrop()
@@ -118,7 +134,7 @@ namespace TetrisLib
             {
                 CreateNewPiece();
 
-                Update();
+                ObserverUpdate();
                 return;
             }
 
@@ -132,13 +148,16 @@ namespace TetrisLib
                 RemoveCompletedLines();
             }
 
-            Update();
+            ObserverUpdate();
         }
 
     private:
-        void Update()
+        void ObserverUpdate()
         {
-            _redrawFunc();
+            for( ITetrisBoardObserver* observer : _observers )
+            {
+                observer->ObserverUpdate();
+            }
         }
 
         void CreateNewPiece()
@@ -212,10 +231,9 @@ namespace TetrisLib
             }
         }
 
-        std::function<void()> _redrawFunc;
-
         std::shared_ptr<ITetrisRawBoardData> _boardData;
         std::shared_ptr<ITetrisPieceProvider> _tetrisPieceProvider;
+        std::set<ITetrisBoardObserver*> _observers;
 
         std::shared_ptr<ITetrisPiece> _currentPiece;
         bool _gameInProgress = true;
@@ -223,10 +241,19 @@ namespace TetrisLib
 }
 
 TetrisBoardData::TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData,
-                                 std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
-                                 std::function<void()> redrawFunc )
+                                 std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider )
 {
-    _impl.reset( new TetrisBoardDataImpl( boardData, tetrisPieceProvider, redrawFunc));
+    _impl.reset( new TetrisBoardDataImpl( boardData, tetrisPieceProvider ) );
+}
+
+void TetrisBoardData::AddObserver( ITetrisBoardObserver* observer )
+{
+    _impl->AddObserver( observer );
+}
+
+void TetrisBoardData::RemoveObserver( ITetrisBoardObserver* observer )
+{
+    _impl->RemoveObserver( observer );
 }
 
 void TetrisBoardData::Reset()

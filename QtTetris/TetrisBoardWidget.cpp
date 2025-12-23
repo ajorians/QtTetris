@@ -2,6 +2,7 @@
 
 #include "TetrisBoardPainter.h"
 
+#include <TetrisLib/ITetrisBoardObserver.h>
 #include <TetrisLib/TetrisBoardData.h>
 #include <TetrisLib/TetrisPieceProvider.h>
 #include <TetrisLib/TetrisRawBoardData.h>
@@ -18,7 +19,7 @@
 
 using namespace std::chrono_literals;
 
-struct TetrisBoardWidgetImpl
+struct TetrisBoardWidgetImpl : public TetrisLib::ITetrisBoardObserver
 {
     TetrisBoardWidgetImpl( QWidget* parent, std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData  )
         : _parent( parent )
@@ -26,6 +27,8 @@ struct TetrisBoardWidgetImpl
         , _tetrisBoardPainter( _tetrisBoardData )
         , _tetrisAI( _tetrisBoardData )
     {
+        _tetrisBoardData->AddObserver( this );
+
         _moveTimer = new QTimer(_parent);
         QObject::connect(_moveTimer, &QTimer::timeout, [this]()
                          {
@@ -37,6 +40,17 @@ struct TetrisBoardWidgetImpl
         });
 
         _moveTimer->start( 1s );
+    }
+
+    ~TetrisBoardWidgetImpl()
+    {
+        _tetrisBoardData->RemoveObserver( this );
+    }
+
+    //TetrisLib::ITetrisBoardObserver
+    void ObserverUpdate() override
+    {
+        _parent->update();
     }
 
     void KeyPress( QKeyEvent *event )
@@ -83,15 +97,10 @@ TetrisBoardWidget::TetrisBoardWidget(QWidget *parent)
 {
     setFocusPolicy(Qt::StrongFocus);
 
-    auto redrawFunc = [this]()
-    {
-        this->update();
-    };
-
     std::shared_ptr<TetrisLib::ITetrisPieceProvider> tetrisPieceProvider( new TetrisLib::TetrisPieceProvider() );
 
     std::shared_ptr<TetrisLib::ITetrisRawBoardData> rawBoardData( new TetrisLib::TetrisRawBoardData( 10, 20 ) );
-    std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData( new TetrisLib::TetrisBoardData( rawBoardData, tetrisPieceProvider, redrawFunc ) );
+    std::shared_ptr<TetrisLib::ITetrisBoardData> tetrisBoardData( new TetrisLib::TetrisBoardData( rawBoardData, tetrisPieceProvider ) );
 
     _impl.reset( new TetrisBoardWidgetImpl( this, tetrisBoardData ) );
 }

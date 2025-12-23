@@ -3,7 +3,6 @@
 
 #include "ITetrisBoardData.h"
 
-#include <functional>
 #include <memory>
 
 namespace TetrisLib
@@ -16,8 +15,10 @@ namespace TetrisLib
    {
    public:
        TetrisBoardData( std::shared_ptr<ITetrisRawBoardData> boardData,
-                       std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider,
-                       std::function<void()> redrawFunc );
+                       std::shared_ptr<ITetrisPieceProvider> tetrisPieceProvider );
+
+       void AddObserver( ITetrisBoardObserver* observer ) override;
+       void RemoveObserver( ITetrisBoardObserver* observer ) override;
 
        void Reset() override;
 

@@ -5,6 +5,7 @@
 
 namespace TetrisLib
 {
+    class ITetrisBoardObserver;
     class ITetrisPiece;
 
     struct SpotInfo;
@@ -16,6 +17,9 @@ namespace TetrisLib
     {
     public:
         virtual ~ITetrisBoardData(){}
+
+        virtual void AddObserver( ITetrisBoardObserver* observer ) = 0;
+        virtual void RemoveObserver( ITetrisBoardObserver* observer ) = 0;
 
         virtual void Reset() = 0;
 
