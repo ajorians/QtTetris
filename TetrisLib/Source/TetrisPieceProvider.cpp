@@ -1,8 +1,8 @@
 #include "TetrisLib/TetrisPieceProvider.h"
 
-#include "TetrisLib/TetrisPiece.h"
-
+#include "TetrisLib/ITetrisRawBoardData.h"
 #include "TetrisLib/SpotColor.h"
+#include "TetrisLib/TetrisPiece.h"
 
 #include <cassert>
 #include <utility>
@@ -74,7 +74,10 @@ std::unique_ptr<ITetrisPiece> TetrisPieceProvider::GetNextPiece( std::shared_ptr
         assert( false );//Problem :(
     }
 
-    std::unique_ptr<TetrisPiece> result( new TetrisPiece( tetrisRawBoardData, spotColor, relativePieces ) );
+    int x = tetrisRawBoardData->GetWidth() / 2;
+    int y = tetrisRawBoardData->GetHeight() - 1/*index*/;
+
+    std::unique_ptr<TetrisPiece> result( new TetrisPiece( tetrisRawBoardData, spotColor, relativePieces, x, y ) );
 
     if( !result->CanBePlaced() )
     {

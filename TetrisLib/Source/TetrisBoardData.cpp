@@ -2,6 +2,7 @@
 
 #include "TetrisLib/Direction.h"
 #include "TetrisLib/SpotColor.h"
+#include "TetrisLib/SpotInfo.h"
 #include "TetrisLib/ITetrisPieceProvider.h"
 #include "TetrisLib/TetrisPiece.h"
 #include "TetrisLib/TetrisRawBoardData.h"
@@ -43,6 +44,39 @@ namespace TetrisLib
             }
 
             return _boardData->GetSpotColor( x, y );
+        }
+
+        SpotInfo GetSpotInfo( int x, int y ) const
+        {
+            SpotColor spotColor = _boardData->GetSpotColor( x, y );
+            SpotOrigin spotOrigin = SpotOrigin::Nothing;
+
+            if( spotColor != SpotColor::Nothing )
+            {
+                spotOrigin = SpotOrigin::BoardPiece;
+            }
+
+            if( _currentPiece )
+            {
+                if( _currentPiece->IsAtSpot( x, y ) )
+                {
+                    spotColor = _currentPiece->GetSpotColor();
+                    spotOrigin = SpotOrigin::CurrentPiece;
+                }
+                else if( _currentPiece->WillBeAtSpot( x, y ) )
+                {
+                    spotColor = _currentPiece->GetSpotColor();
+                    spotOrigin = SpotOrigin::PreviewPiece;
+                }
+            }
+
+            SpotInfo result
+            {
+                .SpotColor = spotColor,
+                .SpotOrigin = spotOrigin
+            };
+
+            return result;
         }
 
         void RotatePiece()
@@ -220,6 +254,11 @@ int TetrisBoardData::GetHeight() const
 SpotColor TetrisBoardData::GetSpotColor( int x, int y ) const
 {
     return _impl->GetSpotColor( x, y );
+}
+
+SpotInfo TetrisBoardData::GetSpotInfo( int x, int y ) const
+{
+    return _impl->GetSpotInfo( x, y );
 }
 
 void TetrisBoardData::RotatePiece()

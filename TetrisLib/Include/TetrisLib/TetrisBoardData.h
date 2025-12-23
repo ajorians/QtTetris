@@ -25,6 +25,7 @@ namespace TetrisLib
        int GetHeight() const override;
 
        SpotColor GetSpotColor( int x, int y ) const override;
+       SpotInfo GetSpotInfo( int x, int y ) const override;
 
        void RotatePiece() override;
        void MovePiece( Direction direction ) override;

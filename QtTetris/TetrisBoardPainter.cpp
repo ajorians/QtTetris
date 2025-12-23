@@ -5,6 +5,7 @@
 
 #include <TetrisLib/Direction.h>
 #include <TetrisLib/SpotColor.h>
+#include <TetrisLib/SpotInfo.h>
 
 #include <QtWidgets>
 
@@ -43,16 +44,16 @@ struct TetrisBoardPainterImpl
         {
             for( int y=0; y<boardHeight; y++)
             {
-                auto pieceColor = _tetrisBoardData->GetSpotColor( x, y );
+                TetrisLib::SpotInfo spotInfo = _tetrisBoardData->GetSpotInfo( x, y );
 
-                if( pieceColor == TetrisLib::SpotColor::Nothing )
+                if( spotInfo.SpotOrigin == TetrisLib::SpotOrigin::Nothing )
                     continue;
 
                 QColor colorPen = Qt::blue;
                 QColor colorBrush = Qt::green;
 
-                QPen pen = GetPen( pieceColor );
-                QBrush brush = GetBrush( pieceColor );
+                QPen pen = GetPen( spotInfo );
+                QBrush brush = GetBrush( spotInfo );
 
                 painter.setPen(pen);
                 painter.setBrush(brush);
@@ -83,10 +84,10 @@ private:
         return {pixelsPerPieceWidth, pixelsPerPieceHeight};
     }
 
-    QPen GetPen( const TetrisLib::SpotColor& spotColor ) const
+    QPen GetPen( const TetrisLib::SpotInfo& spotInfo ) const
     {
         QColor colorPen;
-        switch( spotColor )
+        switch( spotInfo.SpotColor )
         {
         default:
             assert( false );
@@ -113,13 +114,19 @@ private:
         break;
         }
 
-        return QPen(colorPen, 2, Qt::SolidLine);
+        if( spotInfo.SpotOrigin == TetrisLib::SpotOrigin::PreviewPiece )
+        {
+            colorPen.setAlpha( 100 );
+        }
+
+        QPen pen(colorPen, 2, Qt::SolidLine);
+        return pen;
     }
 
-    QBrush GetBrush( const TetrisLib::SpotColor& spotColor ) const
+    QBrush GetBrush( const TetrisLib::SpotInfo& spotInfo ) const
     {
         QColor colorBrush;
-        switch( spotColor )
+        switch( spotInfo.SpotColor )
         {
         default:
             assert( false );
@@ -146,7 +153,13 @@ private:
             break;
         }
 
-        return QBrush(colorBrush, Qt::SolidPattern);
+        if( spotInfo.SpotOrigin == TetrisLib::SpotOrigin::PreviewPiece )
+        {
+            colorBrush.setAlpha( 100 );
+        }
+
+        QBrush result(colorBrush, Qt::SolidPattern);
+        return result;
     }
 
     std::shared_ptr<const TetrisLib::ITetrisBoardData> _tetrisBoardData;

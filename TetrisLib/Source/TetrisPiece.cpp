@@ -10,13 +10,17 @@ namespace TetrisLib
 {
     struct TetrisPieceImpl
     {
-        TetrisPieceImpl( std::shared_ptr<ITetrisRawBoardData> boardData, SpotColor spotColor, const std::vector<std::pair<int, int>>& relativePieces )
+        TetrisPieceImpl( std::shared_ptr<ITetrisRawBoardData> boardData,
+                        SpotColor spotColor,
+                        const std::vector<std::pair<int, int>>& relativePieces,
+                        int x,
+                        int y )
             : _boardData( boardData )
             , _spotColor( spotColor )
             , _relativePieces( relativePieces )
+            , _x( x )
+            , _y( y )
         {
-            _x = _boardData->GetWidth() / 2;
-            _y = _boardData->GetHeight() - 1/*index*/;
         }
 
         bool CanBePlaced() const
@@ -75,6 +79,17 @@ namespace TetrisLib
             }
 
             return false;
+        }
+
+        bool WillBeAtSpot( int x, int y ) const
+        {
+            if( IsAtSpot( x, y ) )
+                return false;
+
+            TetrisPieceImpl previewPiece( *this );
+            while( previewPiece.MoveDownOneRow() ){}
+
+            return previewPiece.IsAtSpot( x, y );
         }
 
         SpotColor GetSpotColor() const
@@ -158,9 +173,13 @@ namespace TetrisLib
     };
 }
 
-TetrisPiece::TetrisPiece( std::shared_ptr<ITetrisRawBoardData> boardData, SpotColor spotColor, const std::vector<std::pair<int, int>>& relativePieces )
+TetrisPiece::TetrisPiece( std::shared_ptr<ITetrisRawBoardData> boardData,
+                         SpotColor spotColor,
+                         const std::vector<std::pair<int, int>>& relativePieces,
+                         int x,
+                         int y )
 {
-    _impl.reset( new TetrisPieceImpl( boardData, spotColor, relativePieces ) );
+    _impl.reset( new TetrisPieceImpl( boardData, spotColor, relativePieces, x, y ) );
 }
 
 bool TetrisPiece::CanBePlaced() const
@@ -186,6 +205,11 @@ bool TetrisPiece::MoveDownOneRow()
 bool TetrisPiece::IsAtSpot( int x, int y) const
 {
     return _impl->IsAtSpot( x, y );
+}
+
+bool TetrisPiece::WillBeAtSpot( int x, int y ) const
+{
+    return _impl->WillBeAtSpot( x, y );
 }
 
 SpotColor TetrisPiece::GetSpotColor() const
